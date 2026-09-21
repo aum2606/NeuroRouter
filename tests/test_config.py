@@ -11,6 +11,9 @@ def test_project_configuration_loads() -> None:
 
     assert settings.app.name == "NeuroRouter"
     assert settings.telemetry.database_path == Path("data/neurorouter.db")
+    assert settings.llm.provider == "mock"
+    assert settings.llm.allow_paid_models is False
+    assert settings.llm.providers["openrouter"].model_tiers["fast"] == "openrouter/free"
     assert thresholds.routing.web_threshold == pytest.approx(0.65)
     assert thresholds.quality.max_retries == 2
 
@@ -29,3 +32,12 @@ def test_environment_overrides_yaml(monkeypatch: pytest.MonkeyPatch) -> None:
     overridden = RuntimeSettings(**load_settings().model_dump())
 
     assert overridden.app.environment == "test"
+
+
+def test_free_provider_can_be_selected_by_environment(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("NEUROROUTER_LLM__PROVIDER", "groq")
+
+    overridden = RuntimeSettings(**load_settings().model_dump())
+
+    assert overridden.llm.provider == "groq"
+    assert overridden.llm.providers["groq"].free_tier_only is True

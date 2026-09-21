@@ -19,10 +19,46 @@ jev:
 
 llm:
   provider: mock
-  model_tiers:
-    fast: mock-fast
-    standard: mock-standard
-    reasoning: mock-reasoning
+  allow_paid_models: false
+  request_timeout_seconds: 60.0
+  max_output_tokens: 4096
+  providers:
+    mock:
+      enabled: true
+      free_tier_only: true
+      api_key_env: null
+      base_url: null
+      model_tiers:
+        fast: mock-fast
+        standard: mock-standard
+        reasoning: mock-reasoning
+    groq:
+      enabled: true
+      free_tier_only: true
+      api_key_env: GROQ_API_KEY
+      base_url: https://api.groq.com/openai/v1
+      model_tiers:
+        fast: llama-3.1-8b-instant
+        standard: llama-3.3-70b-versatile
+        reasoning: openai/gpt-oss-120b
+    gemini:
+      enabled: true
+      free_tier_only: true
+      api_key_env: GEMINI_API_KEY
+      base_url: https://generativelanguage.googleapis.com
+      model_tiers:
+        fast: gemini-2.5-flash-lite
+        standard: gemini-2.5-flash
+        reasoning: gemini-2.5-flash
+    openrouter:
+      enabled: true
+      free_tier_only: true
+      api_key_env: OPENROUTER_API_KEY
+      base_url: https://openrouter.ai/api/v1
+      model_tiers:
+        fast: openrouter/free
+        standard: openrouter/free
+        reasoning: openrouter/free
 
 ui:
   page_title: NeuroRouter Control Plane

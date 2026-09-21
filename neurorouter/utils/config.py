@@ -2,10 +2,10 @@
 
 from functools import lru_cache
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 import yaml
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 from pydantic_settings import (
     BaseSettings,
     PydanticBaseSettingsSource,
@@ -42,9 +42,38 @@ class JevSettings(ConfigModel):
     timeout_seconds: float = Field(default=30.0, gt=0)
 
 
-class LLMSettings(ConfigModel):
-    provider: str = "mock"
+class LLMProviderSettings(ConfigModel):
+    """Configuration for one interchangeable LLM backend."""
+
+    enabled: bool = False
+    free_tier_only: bool = True
+    api_key_env: str | None = None
+    base_url: str | None = None
     model_tiers: dict[str, str]
+
+
+class LLMSettings(ConfigModel):
+    """LLM selection with an explicit guard against paid-model fallback."""
+
+    provider: Literal["mock", "groq", "gemini", "openrouter"] = "mock"
+    allow_paid_models: bool = False
+    request_timeout_seconds: float = Field(default=60.0, gt=0)
+    max_output_tokens: int = Field(default=4096, gt=0)
+    providers: dict[str, LLMProviderSettings]
+
+    @model_validator(mode="after")
+    def validate_selected_provider(self) -> "LLMSettings":
+        selected = self.providers.get(self.provider)
+        if selected is None:
+            raise ValueError(f"missing configuration for LLM provider: {self.provider}")
+        if not selected.enabled:
+            raise ValueError(f"selected LLM provider is disabled: {self.provider}")
+        if not self.allow_paid_models and not selected.free_tier_only:
+            raise ValueError("paid-model fallback is disabled")
+        required_tiers = {"fast", "standard", "reasoning"}
+        if required_tiers - selected.model_tiers.keys():
+            raise ValueError("selected LLM provider must configure all model tiers")
+        return self
 
 
 class UISettings(ConfigModel):
@@ -134,4 +163,6 @@ class SecretSettings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     typesafe_api_key: str | None = Field(default=None, alias="TYPESAFE_API_KEY")
-    llm_api_key: str | None = Field(default=None, alias="LLM_API_KEY")
+    groq_api_key: str | None = Field(default=None, alias="GROQ_API_KEY")
+    gemini_api_key: str | None = Field(default=None, alias="GEMINI_API_KEY")
+    openrouter_api_key: str | None = Field(default=None, alias="OPENROUTER_API_KEY")

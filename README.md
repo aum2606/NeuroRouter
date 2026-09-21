@@ -54,6 +54,19 @@ ruff check .
 Environment overrides use the `NEUROROUTER_` prefix and `__` for nested keys, for example
 `NEUROROUTER_TELEMETRY__DATABASE_PATH=data/demo.db`.
 
+### Free-tier LLM providers
+
+The application defaults to `mock`, which requires no key and cannot incur API charges. The
+configuration also defines interchangeable `groq`, `gemini`, and `openrouter` providers for the
+later synthesis phase. Set the matching key in `.env` and set
+`NEUROROUTER_LLM__PROVIDER` to its name.
+
+`allow_paid_models` defaults to `false`. OpenRouter uses its `openrouter/free` router, Gemini uses
+Flash/Flash-Lite models available on its free tier, and Groq is constrained to the quota attached
+to a free-tier account. Exhausted quota must fail visibly; NeuroRouter will not silently switch to
+a billable model. Provider model IDs remain configuration rather than application logic because
+free-tier catalogs and limits can change.
+
 ## Architecture direction
 
 ```text

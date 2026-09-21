@@ -32,13 +32,18 @@ dev = [
 include = ["neurorouter*"]
 
 [tool.pytest.ini_options]
-addopts = "-q --basetemp=.pytest-tmp"
+addopts = "-q --basetemp=data/.pytest-tmp"
+cache_dir = "data/.pytest_cache"
 testpaths = ["tests"]
 
 [tool.ruff]
 target-version = "py311"
 line-length = 100
 extend-exclude = [".uv-cache"]
+cache-dir = "data/.ruff_cache"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.coverage.run]
+data_file = "data/.coverage"
