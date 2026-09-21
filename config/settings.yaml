@@ -1,0 +1,29 @@
+app:
+  name: NeuroRouter
+  environment: development
+  log_level: INFO
+
+capabilities:
+  web_search_available: false
+  rag_available: true
+  code_available: false
+  finance_agent_available: false
+
+telemetry:
+  database_path: data/neurorouter.db
+  log_raw_jev_responses: true
+
+jev:
+  model: jev-latest
+  timeout_seconds: 30.0
+
+llm:
+  provider: mock
+  model_tiers:
+    fast: mock-fast
+    standard: mock-standard
+    reasoning: mock-reasoning
+
+ui:
+  page_title: NeuroRouter Control Plane
+  page_icon: "🧠"

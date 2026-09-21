@@ -1,0 +1,6 @@
+version: 1
+
+# Prompt bodies are added with their owning phases so this file remains an explicit,
+# version-controlled configuration boundary instead of a collection of placeholders.
+synthesis: {}
+agents: {}

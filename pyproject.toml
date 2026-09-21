@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "neurorouter"
+version = "0.1.0"
+description = "A Jev-powered probabilistic control plane for multi-agent AI systems"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+authors = [{ name = "Aum" }]
+dependencies = [
+  "plotly>=6.0,<7",
+  "pydantic>=2.11,<3",
+  "pydantic-settings>=2.8,<3",
+  "python-dotenv>=1.1,<2",
+  "PyYAML>=6.0,<7",
+  "streamlit>=1.48,<2",
+  "typesafe-sdk>=0.7,<1",
+]
+
+[project.optional-dependencies]
+rag = ["chromadb>=1.0,<2", "pypdf>=5.0,<7"]
+dev = [
+  "pytest>=8.3,<9",
+  "pytest-cov>=6.0,<8",
+  "ruff>=0.12,<1",
+]
+
+[tool.setuptools.packages.find]
+include = ["neurorouter*"]
+
+[tool.pytest.ini_options]
+addopts = "-q --basetemp=.pytest-tmp"
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+extend-exclude = [".uv-cache"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]

@@ -1,0 +1,16 @@
+routing:
+  web_threshold: 0.65
+  rag_threshold: 0.65
+  code_threshold: 0.70
+  data_threshold: 0.70
+  citations_threshold: 0.60
+  multi_source_threshold: 0.70
+
+quality:
+  answers_request_minimum: 0.75
+  evidence_support_minimum: 0.75
+  unsupported_claims_maximum: 0.25
+  missing_information_maximum: 0.30
+  contradiction_maximum: 0.15
+  additional_retrieval_threshold: 0.60
+  max_retries: 2
