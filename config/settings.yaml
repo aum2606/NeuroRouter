@@ -16,6 +16,21 @@ telemetry:
 jev:
   model: jev-latest
   timeout_seconds: 30.0
+  fallback:
+    enabled: true
+    intent: general_qa
+    intent_confidence: 0.0
+    needs_web: 0.0
+    needs_rag: 0.0
+    needs_code: 0.0
+    needs_data_analysis: 0.0
+    needs_current_information: 0.0
+    needs_citations: 0.0
+    needs_multi_source_research: 0.0
+    complexity_score: 1.0
+    complexity_confidence: 0.0
+    risk_score: 1.0
+    risk_confidence: 0.0
 
 llm:
   provider: mock

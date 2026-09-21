@@ -8,7 +8,7 @@ st.caption("The live request cockpit will connect to the router and orchestrator
 left, right = st.columns([3, 2])
 with left:
     st.subheader("Conversation")
-    st.info("Phase 1 shell — request execution is not enabled yet.")
+    st.info("Phase 2 shell — routing is implemented; end-to-end execution is not enabled yet.")
     st.chat_input("Route a request…", disabled=True)
 with right:
     st.subheader("Live decisions")

@@ -33,10 +33,10 @@ class RoutingDecision(BaseModel):
     needs_citations: float = Field(ge=0.0, le=1.0)
     needs_multi_source_research: float = Field(ge=0.0, le=1.0)
 
-    complexity_score: int = Field(ge=0, le=3)
+    complexity_score: float = Field(ge=0, le=3)
     complexity_confidence: float = Field(ge=0.0, le=1.0)
     complexity_probabilities: dict[int, float]
-    risk_score: int = Field(ge=0, le=3)
+    risk_score: float = Field(ge=0, le=3)
     risk_confidence: float = Field(ge=0.0, le=1.0)
     risk_probabilities: dict[int, float]
 
@@ -50,10 +50,6 @@ class RoutingDecision(BaseModel):
         self._validate_distribution(self.risk_probabilities, "risk")
         if self.intent not in self.intent_probabilities:
             raise ValueError("intent must be present in intent_probabilities")
-        if self.complexity_score not in self.complexity_probabilities:
-            raise ValueError("complexity_score must be present in complexity_probabilities")
-        if self.risk_score not in self.risk_probabilities:
-            raise ValueError("risk_score must be present in risk_probabilities")
         return self
 
     @staticmethod

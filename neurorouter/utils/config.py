@@ -37,9 +37,31 @@ class TelemetrySettings(ConfigModel):
     log_raw_jev_responses: bool = True
 
 
+class JevFallbackSettings(ConfigModel):
+    """Conservative normalized values used only when Jev is unavailable."""
+
+    enabled: bool = True
+    intent: Literal[
+        "general_qa", "research", "document_qa", "coding", "data_analysis", "finance", "mixed"
+    ] = "general_qa"
+    intent_confidence: float = Field(default=0.0, ge=0, le=1)
+    needs_web: float = Field(default=0.0, ge=0, le=1)
+    needs_rag: float = Field(default=0.0, ge=0, le=1)
+    needs_code: float = Field(default=0.0, ge=0, le=1)
+    needs_data_analysis: float = Field(default=0.0, ge=0, le=1)
+    needs_current_information: float = Field(default=0.0, ge=0, le=1)
+    needs_citations: float = Field(default=0.0, ge=0, le=1)
+    needs_multi_source_research: float = Field(default=0.0, ge=0, le=1)
+    complexity_score: float = Field(default=1.0, ge=0, le=3)
+    complexity_confidence: float = Field(default=0.0, ge=0, le=1)
+    risk_score: float = Field(default=1.0, ge=0, le=3)
+    risk_confidence: float = Field(default=0.0, ge=0, le=1)
+
+
 class JevSettings(ConfigModel):
     model: str = "jev-latest"
     timeout_seconds: float = Field(default=30.0, gt=0)
+    fallback: JevFallbackSettings = Field(default_factory=JevFallbackSettings)
 
 
 class LLMProviderSettings(ConfigModel):

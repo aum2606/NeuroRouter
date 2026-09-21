@@ -45,7 +45,7 @@ st.divider()
 left, right = st.columns([1.55, 1], gap="large")
 with left:
     st.subheader("Command Center")
-    st.info("Phase 1 foundation is online. Live request execution is enabled in later phases.")
+    st.info("Phase 2 routing is online. End-to-end request execution is enabled in later phases.")
     st.text_area(
         "Request",
         placeholder="Ask NeuroRouter to research, analyze, or build something…",
@@ -59,7 +59,7 @@ with right:
     readiness = {
         "Validated state contracts": True,
         "SQLite telemetry": repository.healthcheck(),
-        "Jev router": False,
+        "Jev routing layer": True,
         "Policy engine": False,
         "Specialist agents": False,
     }

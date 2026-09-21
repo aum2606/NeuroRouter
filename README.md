@@ -7,7 +7,7 @@ classify atomic properties of a request, Python policy will turn those probabili
 execution plan, bounded specialist agents will gather evidence, and an LLM will synthesize only
 when needed. Every stage is designed to be inspectable through persisted traces.
 
-## Phase 1 status
+## Implementation status: Phases 1–2
 
 This repository currently provides the foundation:
 
@@ -15,11 +15,15 @@ This repository currently provides the foundation:
 - typed YAML and environment configuration without secrets in runtime state;
 - a thread-safe SQLite trace repository and request tracer;
 - a multi-page Streamlit control-center shell;
-- a narrow Jev client protocol ready for the Phase 2 adapter;
+- a secret-free `StateBuilder` for validated routing context;
+- one batched Jev call containing 10 independent Choice, Noul, and Score judgments;
+- a concrete async TypeSafe SDK adapter with strict response normalization;
+- complete probability preservation and a configurable, capability-aware failure fallback;
 - unit tests for deterministic foundation code.
 
-Agent execution, live Jev calls, RAG, synthesis, and quality-gate behavior are intentionally not
-implemented yet.
+Policy evaluation, agent execution, RAG, synthesis, and quality-gate behavior are intentionally not
+implemented yet. The Jev adapter is ready for a `TYPESAFE_API_KEY`, while unit tests use injected
+responses and require no external service.
 
 ## Local setup
 
