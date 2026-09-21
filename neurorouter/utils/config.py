@@ -44,6 +44,26 @@ class WebSearchSettings(ConfigModel):
     timeout_seconds: float = Field(default=10.0, gt=0, le=60)
 
 
+class RAGSettings(ConfigModel):
+    """Local, key-free retrieval configuration."""
+
+    collection_name: str = Field(default="neurorouter_documents", min_length=3)
+    persist_directory: Path = Path("data/chroma")
+    embedding_provider: Literal["hashing"] = "hashing"
+    embedding_dimensions: int = Field(default=384, ge=64, le=4096)
+    chunk_size: int = Field(default=1000, ge=100, le=10000)
+    chunk_overlap: int = Field(default=150, ge=0, le=5000)
+    retrieval_top_k: int = Field(default=5, ge=1, le=50)
+    minimum_relevance: float = Field(default=0.15, ge=0, le=1)
+    max_file_size_mb: int = Field(default=25, ge=1, le=200)
+
+    @model_validator(mode="after")
+    def validate_chunk_overlap(self) -> "RAGSettings":
+        if self.chunk_overlap >= self.chunk_size:
+            raise ValueError("chunk overlap must be smaller than chunk size")
+        return self
+
+
 class JevFallbackSettings(ConfigModel):
     """Conservative normalized values used only when Jev is unavailable."""
 
@@ -124,6 +144,7 @@ class RuntimeSettings(BaseSettings):
     capabilities: CapabilitySettings
     telemetry: TelemetrySettings
     web_search: WebSearchSettings
+    rag: RAGSettings
     jev: JevSettings
     llm: LLMSettings
     ui: UISettings

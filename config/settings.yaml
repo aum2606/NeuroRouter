@@ -19,6 +19,17 @@ web_search:
   results_per_query: 5
   timeout_seconds: 10.0
 
+rag:
+  collection_name: neurorouter_documents
+  persist_directory: data/chroma
+  embedding_provider: hashing
+  embedding_dimensions: 384
+  chunk_size: 1000
+  chunk_overlap: 150
+  retrieval_top_k: 5
+  minimum_relevance: 0.15
+  max_file_size_mb: 25
+
 jev:
   model: jev-latest
   timeout_seconds: 30.0

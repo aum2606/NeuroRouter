@@ -7,7 +7,7 @@ classify atomic properties of a request, Python policy will turn those probabili
 execution plan, bounded specialist agents will gather evidence, and an LLM will synthesize only
 when needed. Every stage is designed to be inspectable through persisted traces.
 
-## Implementation status: Phases 1–4
+## Implementation status: Phases 1–5
 
 This repository currently provides the foundation:
 
@@ -24,11 +24,15 @@ This repository currently provides the foundation:
 - bounded General and Web Research agents with normalized results and isolated failures;
 - a free, no-key Wikipedia search provider behind a replaceable `WebSearchProvider` interface;
 - dependency-aware orchestration with explicit parallel groups and per-agent telemetry;
+- PDF, TXT, and Markdown extraction with page-aware document metadata;
+- deterministic overlapping chunks and stable content identifiers;
+- a configurable embedding boundary with key-free local hashing embeddings by default;
+- persistent cosine retrieval through ChromaDB and structured local evidence from `RAGAgent`;
 - unit tests for deterministic foundation code.
 
-RAG, Code and Finance agents, synthesis, and quality-gate evaluation are intentionally not
-implemented yet. The Jev adapter is ready for a `TYPESAFE_API_KEY`, while unit tests use injected
-responses and require no external service.
+Code and Finance agents, synthesis, and quality-gate evaluation are intentionally not implemented
+yet. The Jev adapter is ready for a `TYPESAFE_API_KEY`, while unit tests use injected responses and
+require no external service.
 
 The Phase 4 web provider searches English Wikipedia rather than the entire public web. This keeps
 local demos keyless and honest about source coverage. A broader provider can be substituted through
@@ -42,13 +46,13 @@ Python 3.11 or newer is required.
 python -m venv .venv
 # Windows: .venv\Scripts\activate
 # macOS/Linux: source .venv/bin/activate
-python -m pip install -e ".[dev]"
+python -m pip install -e ".[dev,rag]"
 copy .env.example .env  # Windows; use `cp` on macOS/Linux
 streamlit run app.py
 ```
 
-No API key is required to run Phase 1. The local trace database is created at
-`data/neurorouter.db` on first use.
+No API key is required for the current local pipeline. The trace database is created at
+`data/neurorouter.db`; the vector collection is persisted under `data/chroma/`.
 
 Run checks with:
 
@@ -63,6 +67,30 @@ ruff check .
 - `config/thresholds.yaml`: deterministic routing and quality policy thresholds.
 - `config/prompts.yaml`: versioned prompt placeholders for later phases.
 - `.env`: credentials and local overrides; this file is ignored by Git.
+
+## Local RAG usage
+
+The Phase 5 API intentionally stays independent of Streamlit so ingestion and retrieval can be
+tested or reused by later interfaces:
+
+```python
+from pathlib import Path
+
+from neurorouter.rag import ChromaVectorStore, Chunker, HashingEmbeddingProvider, Retriever
+from neurorouter.tools.document_loader import DocumentLoader
+
+retriever = Retriever(
+    chunker=Chunker(chunk_size=1000, overlap=150),
+    embeddings=HashingEmbeddingProvider(dimensions=384),
+    vector_store=ChromaVectorStore(Path("data/chroma"), "neurorouter_documents"),
+)
+retriever.index(DocumentLoader().load("data/example.pdf"))
+matches = retriever.retrieve("What does the document say about routing?")
+```
+
+The default hashing provider is deterministic, local, and free; it is best suited to portfolio
+demos and lexical-semantic retrieval. Its interface can later accept a stronger free embedding
+provider without coupling ChromaDB, the retriever, or `RAGAgent` to that provider.
 
 Environment overrides use the `NEUROROUTER_` prefix and `__` for nested keys, for example
 `NEUROROUTER_TELEMETRY__DATABASE_PATH=data/demo.db`.

@@ -2,6 +2,14 @@
 
 from neurorouter.agents.base import AgentInput, AgentResult, BaseAgent
 from neurorouter.agents.general import GeneralAgent
+from neurorouter.agents.rag import RAGAgent
 from neurorouter.agents.research import WebResearchAgent
 
-__all__ = ["AgentInput", "AgentResult", "BaseAgent", "GeneralAgent", "WebResearchAgent"]
+__all__ = [
+    "AgentInput",
+    "AgentResult",
+    "BaseAgent",
+    "GeneralAgent",
+    "RAGAgent",
+    "WebResearchAgent",
+]

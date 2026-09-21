@@ -14,6 +14,8 @@ def test_project_configuration_loads() -> None:
     assert settings.llm.provider == "mock"
     assert settings.llm.allow_paid_models is False
     assert settings.llm.providers["openrouter"].model_tiers["fast"] == "openrouter/free"
+    assert settings.rag.embedding_provider == "hashing"
+    assert settings.rag.chunk_overlap < settings.rag.chunk_size
     assert thresholds.routing.web_threshold == pytest.approx(0.65)
     assert thresholds.quality.max_retries == 2
 
