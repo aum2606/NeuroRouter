@@ -4,7 +4,7 @@ app:
   log_level: INFO
 
 capabilities:
-  web_search_available: false
+  web_search_available: true
   rag_available: true
   code_available: false
   finance_agent_available: false
@@ -12,6 +12,12 @@ capabilities:
 telemetry:
   database_path: data/neurorouter.db
   log_raw_jev_responses: true
+
+web_search:
+  provider: wikipedia
+  max_queries: 3
+  results_per_query: 5
+  timeout_seconds: 10.0
 
 jev:
   model: jev-latest

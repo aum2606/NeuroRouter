@@ -8,6 +8,7 @@ from neurorouter.core.router import JevRouter
 from neurorouter.core.state_builder import StateBuilder
 from neurorouter.jev.client import JevClient
 from neurorouter.schemas.routing import Intent
+from neurorouter.schemas.state import CapabilityState
 from neurorouter.utils.config import load_settings
 from tests.test_routing_parser import _raw_response
 
@@ -48,6 +49,16 @@ def test_router_applies_capability_aware_fallback() -> None:
     )
     client: JevClient = RecordingClient()
     state = StateBuilder(settings).build("Fallback safely")
+    state = state.model_copy(
+        update={
+            "capabilities": CapabilityState(
+                web_search_available=False,
+                rag_available=True,
+                code_available=False,
+                finance_agent_available=False,
+            )
+        }
+    )
 
     result = asyncio.run(JevRouter(client, fallback).route(state))
 

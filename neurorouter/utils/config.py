@@ -37,6 +37,13 @@ class TelemetrySettings(ConfigModel):
     log_raw_jev_responses: bool = True
 
 
+class WebSearchSettings(ConfigModel):
+    provider: Literal["wikipedia", "static"] = "wikipedia"
+    max_queries: int = Field(default=3, ge=1, le=10)
+    results_per_query: int = Field(default=5, ge=1, le=20)
+    timeout_seconds: float = Field(default=10.0, gt=0, le=60)
+
+
 class JevFallbackSettings(ConfigModel):
     """Conservative normalized values used only when Jev is unavailable."""
 
@@ -116,6 +123,7 @@ class RuntimeSettings(BaseSettings):
     app: AppMetadata
     capabilities: CapabilitySettings
     telemetry: TelemetrySettings
+    web_search: WebSearchSettings
     jev: JevSettings
     llm: LLMSettings
     ui: UISettings

@@ -7,7 +7,7 @@ classify atomic properties of a request, Python policy will turn those probabili
 execution plan, bounded specialist agents will gather evidence, and an LLM will synthesize only
 when needed. Every stage is designed to be inspectable through persisted traces.
 
-## Implementation status: Phases 1–3
+## Implementation status: Phases 1–4
 
 This repository currently provides the foundation:
 
@@ -21,11 +21,18 @@ This repository currently provides the foundation:
 - complete probability preservation and a configurable, capability-aware failure fallback;
 - a deterministic policy engine for capability gating, agent dependencies, model tiers, citations,
   quality control, and review escalation;
+- bounded General and Web Research agents with normalized results and isolated failures;
+- a free, no-key Wikipedia search provider behind a replaceable `WebSearchProvider` interface;
+- dependency-aware orchestration with explicit parallel groups and per-agent telemetry;
 - unit tests for deterministic foundation code.
 
-Agent execution, RAG, synthesis, and quality-gate evaluation are intentionally not implemented yet.
-The Jev adapter is ready for a `TYPESAFE_API_KEY`, while unit tests use injected responses and
-require no external service.
+RAG, Code and Finance agents, synthesis, and quality-gate evaluation are intentionally not
+implemented yet. The Jev adapter is ready for a `TYPESAFE_API_KEY`, while unit tests use injected
+responses and require no external service.
+
+The Phase 4 web provider searches English Wikipedia rather than the entire public web. This keeps
+local demos keyless and honest about source coverage. A broader provider can be substituted through
+the same interface without changing `WebResearchAgent` or orchestration code.
 
 ## Local setup
 

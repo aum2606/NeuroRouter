@@ -53,6 +53,11 @@ class ExecutionPlan(BaseModel):
                 raise ValueError("agent dependencies must reference planned agents")
             if agent in dependencies:
                 raise ValueError("an agent cannot depend on itself")
+        self._validate_acyclic_dependencies()
+        for group in self.parallel_agents:
+            members = set(group)
+            if any(members & set(self.agent_dependencies.get(agent, [])) for agent in group):
+                raise ValueError("agents in one parallel group cannot depend on each other")
         if self.use_web and not self.web_allowed:
             raise ValueError("use_web requires web_allowed")
         if self.use_rag and not self.rag_allowed:
@@ -60,3 +65,21 @@ class ExecutionPlan(BaseModel):
         if (self.use_code or self.use_data_analysis) and not self.code_allowed:
             raise ValueError("code or data analysis use requires code_allowed")
         return self
+
+    def _validate_acyclic_dependencies(self) -> None:
+        visiting: set[AgentName] = set()
+        visited: set[AgentName] = set()
+
+        def visit(agent: AgentName) -> None:
+            if agent in visiting:
+                raise ValueError("agent dependencies cannot contain a cycle")
+            if agent in visited:
+                return
+            visiting.add(agent)
+            for dependency in self.agent_dependencies.get(agent, []):
+                visit(dependency)
+            visiting.remove(agent)
+            visited.add(agent)
+
+        for agent in self.agents:
+            visit(agent)

@@ -45,7 +45,7 @@ st.divider()
 left, right = st.columns([1.55, 1], gap="large")
 with left:
     st.subheader("Command Center")
-    st.info("Phase 3 routing and policy are online. Agent execution arrives in the next phase.")
+    st.info("Phase 4 routing, policy, and initial bounded execution are online.")
     st.text_area(
         "Request",
         placeholder="Ask NeuroRouter to research, analyze, or build something…",
@@ -61,7 +61,8 @@ with right:
         "SQLite telemetry": repository.healthcheck(),
         "Jev routing layer": True,
         "Policy engine": True,
-        "Specialist agents": False,
+        "Initial agent runtime": True,
+        "RAG / Code / Finance agents": False,
     }
     for label, ready in readiness.items():
         st.write(f"{'🟢' if ready else '⚪'}  {label}")
