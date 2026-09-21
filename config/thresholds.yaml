@@ -6,6 +6,16 @@ routing:
   citations_threshold: 0.60
   multi_source_threshold: 0.70
 
+planning:
+  intent_specialist_minimum_confidence: 0.55
+  standard_model_complexity: 1.00
+  reasoning_model_complexity: 2.25
+  quality_gate_complexity_threshold: 1.00
+  quality_gate_risk_threshold: 1.00
+  review_risk_threshold: 2.00
+  review_confidence_threshold: 0.45
+  require_review_on_missing_capability: true
+
 quality:
   answers_request_minimum: 0.75
   evidence_support_minimum: 0.75

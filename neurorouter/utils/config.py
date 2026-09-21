@@ -142,6 +142,23 @@ class RoutingThresholds(ConfigModel):
     multi_source_threshold: float = Field(ge=0, le=1)
 
 
+class PlanningThresholds(ConfigModel):
+    intent_specialist_minimum_confidence: float = Field(ge=0, le=1)
+    standard_model_complexity: float = Field(ge=0, le=3)
+    reasoning_model_complexity: float = Field(ge=0, le=3)
+    quality_gate_complexity_threshold: float = Field(ge=0, le=3)
+    quality_gate_risk_threshold: float = Field(ge=0, le=3)
+    review_risk_threshold: float = Field(ge=0, le=3)
+    review_confidence_threshold: float = Field(ge=0, le=1)
+    require_review_on_missing_capability: bool = True
+
+    @model_validator(mode="after")
+    def validate_model_tier_order(self) -> "PlanningThresholds":
+        if self.standard_model_complexity > self.reasoning_model_complexity:
+            raise ValueError("standard model threshold cannot exceed reasoning model threshold")
+        return self
+
+
 class QualityThresholds(ConfigModel):
     answers_request_minimum: float = Field(ge=0, le=1)
     evidence_support_minimum: float = Field(ge=0, le=1)
@@ -154,6 +171,7 @@ class QualityThresholds(ConfigModel):
 
 class PolicyThresholds(ConfigModel):
     routing: RoutingThresholds
+    planning: PlanningThresholds
     quality: QualityThresholds
 
 

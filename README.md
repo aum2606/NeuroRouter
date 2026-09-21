@@ -7,7 +7,7 @@ classify atomic properties of a request, Python policy will turn those probabili
 execution plan, bounded specialist agents will gather evidence, and an LLM will synthesize only
 when needed. Every stage is designed to be inspectable through persisted traces.
 
-## Implementation status: Phases 1–2
+## Implementation status: Phases 1–3
 
 This repository currently provides the foundation:
 
@@ -19,11 +19,13 @@ This repository currently provides the foundation:
 - one batched Jev call containing 10 independent Choice, Noul, and Score judgments;
 - a concrete async TypeSafe SDK adapter with strict response normalization;
 - complete probability preservation and a configurable, capability-aware failure fallback;
+- a deterministic policy engine for capability gating, agent dependencies, model tiers, citations,
+  quality control, and review escalation;
 - unit tests for deterministic foundation code.
 
-Policy evaluation, agent execution, RAG, synthesis, and quality-gate behavior are intentionally not
-implemented yet. The Jev adapter is ready for a `TYPESAFE_API_KEY`, while unit tests use injected
-responses and require no external service.
+Agent execution, RAG, synthesis, and quality-gate evaluation are intentionally not implemented yet.
+The Jev adapter is ready for a `TYPESAFE_API_KEY`, while unit tests use injected responses and
+require no external service.
 
 ## Local setup
 
