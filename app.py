@@ -64,10 +64,12 @@ with left:
         """,
         use_container_width=True,
     )
-    st.page_link("pages/1_Command_Center.py", label="Open live Command Center", icon="⚡")
+    link_columns = st.columns(2)
+    link_columns[0].page_link("pages/1_Command_Center.py", label="Open Command Center", icon="⚡")
+    link_columns[1].page_link("pages/2_Trace_Explorer.py", label="Explore traces", icon="🔎")
 
 with right:
-    st.subheader("Phase 9 readiness")
+    st.subheader("Phase 10 readiness")
     readiness = (
         "Validated state contracts",
         "Atomic Jev routing",
@@ -80,6 +82,9 @@ with right:
         "Complete SQLite lifecycle traces",
         "Execution graph and timeline",
         "Live operations dashboard",
+        "Deep trace inspection",
+        "Counterfactual policy laboratory",
+        "Knowledge-base ingestion interface",
     )
     for label in readiness:
         st.write(f"🟢  {label}")

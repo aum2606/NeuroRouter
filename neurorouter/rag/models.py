@@ -1,5 +1,6 @@
 """Validated contracts shared by the document, vector, and agent layers."""
 
+from datetime import datetime
 from enum import StrEnum
 from typing import Any
 
@@ -56,3 +57,15 @@ class CollectionInfo(RAGModel):
     chunk_count: int = Field(ge=0)
     document_count: int = Field(ge=0)
     documents: list[str] = Field(default_factory=list)
+
+
+class DocumentRecord(RAGModel):
+    """One indexed document summarized from its persisted chunk metadata."""
+
+    document_id: str
+    name: str
+    document_type: str
+    chunk_count: int = Field(ge=0)
+    page_count: int = Field(ge=0)
+    size_bytes: int = Field(ge=0)
+    indexed_at: datetime | None = None

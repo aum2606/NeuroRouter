@@ -7,7 +7,7 @@ classify atomic properties of a request, Python policy will turn those probabili
 execution plan, bounded specialist agents will gather evidence, and an LLM will synthesize only
 when needed. Every stage is designed to be inspectable through persisted traces.
 
-## Implementation status: Phases 1-9
+## Implementation status: Phases 1-10
 
 This repository currently provides the foundation:
 
@@ -46,12 +46,18 @@ This repository currently provides the foundation:
   model selection, token usage, synthesis, quality attempts, retries, and final status;
 - a live Command Center with probability bars, routing cards, deterministic plan inspection,
   measured metrics, a dependency graph, and a Plotly execution timeline;
+- a Trace Explorer with search/filter controls, probability distributions, agent timings,
+  response-quality inspection, and expandable raw debug records;
+- a Decision Lab that replays persisted Jev probabilities through altered thresholds without
+  another Jev or LLM call and presents the exact route delta;
+- a Knowledge Base interface for safe in-memory uploads, local indexing, idempotent re-indexing,
+  and a Chroma-backed document catalog;
 - unit tests for deterministic foundation code.
 
 Both Jev stages are ready for a `TYPESAFE_API_KEY`, while the missing-key path immediately invokes
 the configured conservative fallback and requires no external service or quota. The mock LLM keeps
-the complete Command Center pipeline locally runnable without billing. Phase 10 adds the full Trace
-Explorer, Decision Lab, and Knowledge Base interfaces on top of the Phase 9 telemetry foundation.
+the complete Command Center pipeline locally runnable without billing. Phase 11 adds the measured
+evaluation framework, calibration plots, and baseline comparison infrastructure.
 
 The Phase 4 web provider searches English Wikipedia rather than the entire public web. This keeps
 local demos keyless and honest about source coverage. A broader provider can be substituted through

@@ -34,6 +34,9 @@ def test_chroma_persists_and_queries_supplied_embeddings(tmp_path: Path) -> None
     assert matches[0].page == 2
     assert reopened.collection_info().chunk_count == 2
     assert reopened.collection_info().document_count == 2
+    catalog = reopened.list_documents()
+    assert [record.name for record in catalog] == ["architecture.md", "recipes.txt"]
+    assert catalog[0].page_count == 1
 
 
 def test_chroma_rejects_mismatched_embeddings(tmp_path: Path) -> None:

@@ -53,3 +53,15 @@ def test_rejects_unsupported_and_oversized_documents(tmp_path: Path) -> None:
     oversized.write_bytes(b"x" * (1024 * 1024 + 1))
     with pytest.raises(DocumentLoadError, match="exceeds"):
         DocumentLoader(max_file_size_mb=1).load(oversized)
+
+
+def test_load_bytes_sanitizes_upload_name_and_preserves_type() -> None:
+    loaded = DocumentLoader().load_bytes(
+        "..\\../architecture.md",
+        b"# NeuroRouter\n\nProbabilities remain separate from policy.",
+    )
+
+    assert loaded.name == "architecture.md"
+    assert loaded.document_type is DocumentType.MARKDOWN
+    assert loaded.metadata["document_type"] == "markdown"
+    assert "source_path" not in loaded.metadata

@@ -3,7 +3,7 @@
 from pathlib import Path
 from typing import Protocol
 
-from neurorouter.rag.models import CollectionInfo, RetrievedChunk, TextChunk
+from neurorouter.rag.models import CollectionInfo, DocumentRecord, RetrievedChunk, TextChunk
 
 
 class VectorStore(Protocol):
@@ -12,6 +12,8 @@ class VectorStore(Protocol):
     def query(self, embedding: list[float], *, top_k: int) -> list[RetrievedChunk]: ...
 
     def collection_info(self) -> CollectionInfo: ...
+
+    def list_documents(self) -> list[DocumentRecord]: ...
 
 
 class ChromaVectorStore:
@@ -85,21 +87,41 @@ class ChromaVectorStore:
         return retrieved
 
     def collection_info(self) -> CollectionInfo:
-        result = self._collection.get(include=["metadatas"])
-        metadatas = result.get("metadatas") or []
-        documents = sorted(
-            {
-                str(metadata["document"])
-                for metadata in metadatas
-                if metadata and "document" in metadata
-            }
-        )
+        records = self.list_documents()
         return CollectionInfo(
             name=self.collection_name,
             chunk_count=self._collection.count(),
-            document_count=len(documents),
-            documents=documents,
+            document_count=len(records),
+            documents=sorted(record.name for record in records),
         )
+
+    def list_documents(self) -> list[DocumentRecord]:
+        """Group persisted chunk metadata into stable document catalog rows."""
+        result = self._collection.get(include=["metadatas"])
+        grouped: dict[str, list[dict[str, object]]] = {}
+        for raw_metadata in result.get("metadatas") or []:
+            metadata = dict(raw_metadata or {})
+            document_id = str(metadata.get("document_id") or "")
+            if document_id:
+                grouped.setdefault(document_id, []).append(metadata)
+
+        records: list[DocumentRecord] = []
+        for document_id, chunks in grouped.items():
+            first = chunks[0]
+            pages = {int(item["page"]) for item in chunks if item.get("page") is not None}
+            indexed_at = first.get("indexed_at")
+            records.append(
+                DocumentRecord(
+                    document_id=document_id,
+                    name=str(first.get("document") or "Unknown document"),
+                    document_type=str(first.get("document_type") or "unknown"),
+                    chunk_count=len(chunks),
+                    page_count=len(pages),
+                    size_bytes=int(first.get("size_bytes") or 0),
+                    indexed_at=str(indexed_at) if indexed_at else None,
+                )
+            )
+        return sorted(records, key=lambda record: (record.name.casefold(), record.document_id))
 
     @staticmethod
     def _metadata(chunk: TextChunk) -> dict[str, str | int | float | bool]:

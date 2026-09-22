@@ -1,7 +1,9 @@
 """Safe local extraction for the document formats supported by NeuroRouter."""
 
 import hashlib
+from io import BytesIO
 from pathlib import Path
+from typing import BinaryIO
 
 from neurorouter.rag.models import DocumentSection, DocumentType, LoadedDocument
 
@@ -31,38 +33,58 @@ class DocumentLoader:
 
     def load(self, path: Path | str) -> LoadedDocument:
         source = Path(path)
-        document_type = self._TYPE_BY_SUFFIX.get(source.suffix.casefold())
-        if document_type is None:
-            raise UnsupportedDocumentError(
-                f"Unsupported document type '{source.suffix}'. Use PDF, TXT, or Markdown."
-            )
         if not source.is_file():
             raise DocumentLoadError(f"Document does not exist: {source}")
-        if source.stat().st_size > self.max_file_size_bytes:
+        try:
+            content = source.read_bytes()
+        except OSError as error:
+            raise DocumentLoadError(f"Could not load {source.name}: {error}") from error
+        return self.load_bytes(source.name, content, source_path=source.resolve())
+
+    def load_bytes(
+        self,
+        filename: str,
+        content: bytes,
+        *,
+        source_path: Path | None = None,
+    ) -> LoadedDocument:
+        """Extract an uploaded document without writing it to a temporary file."""
+        safe_name = Path(filename.replace("\\", "/")).name
+        document_type = self._TYPE_BY_SUFFIX.get(Path(safe_name).suffix.casefold())
+        if document_type is None:
+            raise UnsupportedDocumentError(
+                f"Unsupported document type '{Path(safe_name).suffix}'. Use PDF, TXT, or Markdown."
+            )
+        if len(content) > self.max_file_size_bytes:
             raise DocumentLoadError(
                 f"Document exceeds the {self.max_file_size_bytes // (1024 * 1024)} MB limit"
             )
         try:
-            content = source.read_bytes()
             sections = (
-                self._load_pdf(source)
+                self._load_pdf(BytesIO(content), safe_name)
                 if document_type is DocumentType.PDF
                 else [DocumentSection(text=content.decode("utf-8-sig"))]
             )
         except DocumentLoadError:
             raise
         except (OSError, UnicodeDecodeError) as error:
-            raise DocumentLoadError(f"Could not load {source.name}: {error}") from error
+            raise DocumentLoadError(f"Could not load {safe_name}: {error}") from error
+        metadata: dict[str, str | int] = {
+            "size_bytes": len(content),
+            "document_type": document_type.value,
+        }
+        if source_path is not None:
+            metadata["source_path"] = str(source_path)
         return LoadedDocument(
             document_id=hashlib.sha256(content).hexdigest(),
-            name=source.name,
+            name=safe_name,
             document_type=document_type,
             sections=sections,
-            metadata={"source_path": str(source.resolve()), "size_bytes": len(content)},
+            metadata=metadata,
         )
 
     @staticmethod
-    def _load_pdf(path: Path) -> list[DocumentSection]:
+    def _load_pdf(source: BinaryIO, filename: str) -> list[DocumentSection]:
         try:
             from pypdf import PdfReader
         except ImportError as error:  # pragma: no cover - installation guidance
@@ -70,7 +92,7 @@ class DocumentLoader:
                 "Install NeuroRouter with the 'rag' extra to load PDF documents"
             ) from error
         try:
-            reader = PdfReader(path)
+            reader = PdfReader(source)
             if reader.is_encrypted and reader.decrypt("") == 0:
                 raise DocumentLoadError("Password-protected PDFs are not supported")
             return [
@@ -84,4 +106,4 @@ class DocumentLoader:
         except DocumentLoadError:
             raise
         except Exception as error:
-            raise DocumentLoadError(f"Could not extract PDF {path.name}: {error}") from error
+            raise DocumentLoadError(f"Could not extract PDF {filename}: {error}") from error

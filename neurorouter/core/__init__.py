@@ -2,6 +2,7 @@
 
 from neurorouter.core.aggregator import ContextAggregator
 from neurorouter.core.control_plane import ControlPlaneResult, NeuroRouterControlPlane
+from neurorouter.core.decision_lab import CounterfactualResult, replay_policy
 from neurorouter.core.orchestrator import Orchestrator
 from neurorouter.core.pipeline import ExecutionPipeline
 from neurorouter.core.policy_engine import PolicyEngine
@@ -16,6 +17,7 @@ from neurorouter.core.synthesizer import Synthesizer
 __all__ = [
     "ContextAggregator",
     "ControlPlaneResult",
+    "CounterfactualResult",
     "ExecutionPipeline",
     "JevRouter",
     "JevQualityGate",
@@ -28,4 +30,5 @@ __all__ = [
     "StateBuilder",
     "Synthesizer",
     "build_runtime",
+    "replay_policy",
 ]
