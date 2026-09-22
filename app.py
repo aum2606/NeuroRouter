@@ -45,7 +45,7 @@ st.divider()
 left, right = st.columns([1.55, 1], gap="large")
 with left:
     st.subheader("Command Center")
-    st.info("Phase 5 routing, policy, bounded execution, and local RAG are online.")
+    st.info("Phase 6 routing, local RAG, Code, and Finance specialists are online.")
     st.text_area(
         "Request",
         placeholder="Ask NeuroRouter to research, analyze, or build something…",
@@ -63,7 +63,9 @@ with right:
         "Policy engine": True,
         "Initial agent runtime": True,
         "Local RAG pipeline": True,
-        "Code / Finance agents": False,
+        "Code specialist": True,
+        "Finance specialist": True,
+        "LLM synthesis / quality gate": False,
     }
     for label, ready in readiness.items():
         st.write(f"{'🟢' if ready else '⚪'}  {label}")

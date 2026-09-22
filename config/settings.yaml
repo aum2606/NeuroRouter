@@ -6,8 +6,8 @@ app:
 capabilities:
   web_search_available: true
   rag_available: true
-  code_available: false
-  finance_agent_available: false
+  code_available: true
+  finance_agent_available: true
 
 telemetry:
   database_path: data/neurorouter.db
@@ -29,6 +29,17 @@ rag:
   retrieval_top_k: 5
   minimum_relevance: 0.15
   max_file_size_mb: 25
+
+code_execution:
+  enabled: false
+  language: python
+  timeout_seconds: 2.0
+  max_source_characters: 10000
+  max_output_characters: 20000
+
+finance:
+  require_web_for_current_data: true
+  ratio_precision: 4
 
 jev:
   model: jev-latest

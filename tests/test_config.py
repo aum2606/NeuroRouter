@@ -16,6 +16,9 @@ def test_project_configuration_loads() -> None:
     assert settings.llm.providers["openrouter"].model_tiers["fast"] == "openrouter/free"
     assert settings.rag.embedding_provider == "hashing"
     assert settings.rag.chunk_overlap < settings.rag.chunk_size
+    assert settings.code_execution.enabled is False
+    assert settings.code_execution.language == "python"
+    assert settings.finance.require_web_for_current_data is True
     assert thresholds.routing.web_threshold == pytest.approx(0.65)
     assert thresholds.quality.max_retries == 2
 

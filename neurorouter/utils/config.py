@@ -64,6 +64,23 @@ class RAGSettings(ConfigModel):
         return self
 
 
+class CodeExecutionSettings(ConfigModel):
+    """Guardrails for optional, restricted local code execution."""
+
+    enabled: bool = False
+    language: Literal["python"] = "python"
+    timeout_seconds: float = Field(default=2.0, gt=0, le=10)
+    max_source_characters: int = Field(default=10000, ge=100, le=50000)
+    max_output_characters: int = Field(default=20000, ge=1000, le=100000)
+
+
+class FinanceSettings(ConfigModel):
+    """Deterministic finance-analysis policy settings."""
+
+    require_web_for_current_data: bool = True
+    ratio_precision: int = Field(default=4, ge=0, le=8)
+
+
 class JevFallbackSettings(ConfigModel):
     """Conservative normalized values used only when Jev is unavailable."""
 
@@ -145,6 +162,8 @@ class RuntimeSettings(BaseSettings):
     telemetry: TelemetrySettings
     web_search: WebSearchSettings
     rag: RAGSettings
+    code_execution: CodeExecutionSettings
+    finance: FinanceSettings
     jev: JevSettings
     llm: LLMSettings
     ui: UISettings

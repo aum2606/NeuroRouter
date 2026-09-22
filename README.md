@@ -7,7 +7,7 @@ classify atomic properties of a request, Python policy will turn those probabili
 execution plan, bounded specialist agents will gather evidence, and an LLM will synthesize only
 when needed. Every stage is designed to be inspectable through persisted traces.
 
-## Implementation status: Phases 1–5
+## Implementation status: Phases 1–6
 
 This repository currently provides the foundation:
 
@@ -28,11 +28,15 @@ This repository currently provides the foundation:
 - deterministic overlapping chunks and stable content identifiers;
 - a configurable embedding boundary with key-free local hashing embeddings by default;
 - persistent cosine retrieval through ChromaDB and structured local evidence from `RAGAgent`;
+- bounded Code and Finance specialists with structured synthesis handoffs;
+- disabled-by-default Python execution with AST restrictions, isolated mode, timeouts, and capped
+  output;
+- deterministic financial ratios and a strict fresh-web-evidence guard for current-market claims;
 - unit tests for deterministic foundation code.
 
-Code and Finance agents, synthesis, and quality-gate evaluation are intentionally not implemented
-yet. The Jev adapter is ready for a `TYPESAFE_API_KEY`, while unit tests use injected responses and
-require no external service.
+LLM synthesis and quality-gate evaluation are intentionally not implemented yet. The Jev adapter
+is ready for a `TYPESAFE_API_KEY`, while unit tests use injected responses and require no external
+service.
 
 The Phase 4 web provider searches English Wikipedia rather than the entire public web. This keeps
 local demos keyless and honest about source coverage. A broader provider can be substituted through
@@ -91,6 +95,20 @@ matches = retriever.retrieve("What does the document say about routing?")
 The default hashing provider is deterministic, local, and free; it is best suited to portfolio
 demos and lexical-semantic retrieval. Its interface can later accept a stronger free embedding
 provider without coupling ChromaDB, the retriever, or `RAGAgent` to that provider.
+
+## Code and finance safety
+
+`CodeAgent` classifies generation, debugging, explanation, and data-analysis work and inspects
+supplied Python syntax. Execution requires both an explicit request context flag and an enabled
+`CodeExecutionTool`. The default tool never executes code. The optional local runner supports only
+a calculation-oriented Python subset: imports, attributes, definitions, dynamic calls, and file
+access are rejected; execution uses isolated interpreter mode with a strict timeout and output cap.
+It is intentionally not described as a general-purpose security sandbox.
+
+`FinanceAgent` calculates common ratios only from structured values supplied to it and preserves
+upstream web sources as evidence. If the execution plan requests fresh web information but the web
+agent supplies no evidence, Finance returns a review state and explicitly blocks current-market
+claims.
 
 Environment overrides use the `NEUROROUTER_` prefix and `__` for nested keys, for example
 `NEUROROUTER_TELEMETRY__DATABASE_PATH=data/demo.db`.
