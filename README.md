@@ -7,14 +7,14 @@ classify atomic properties of a request, Python policy will turn those probabili
 execution plan, bounded specialist agents will gather evidence, and an LLM will synthesize only
 when needed. Every stage is designed to be inspectable through persisted traces.
 
-## Implementation status: Phases 1–8
+## Implementation status: Phases 1-9
 
 This repository currently provides the foundation:
 
 - validated Pydantic contracts for state, routing, execution, and traces;
 - typed YAML and environment configuration without secrets in runtime state;
-- a thread-safe SQLite trace repository and request tracer;
-- a multi-page Streamlit control-center shell;
+- a migration-safe SQLite trace repository and request tracer;
+- a functional multi-page Streamlit operations interface;
 - a secret-free `StateBuilder` for validated routing context;
 - one batched Jev call containing 10 independent Choice, Noul, and Score judgments;
 - a concrete async TypeSafe SDK adapter with strict response normalization;
@@ -42,11 +42,16 @@ This repository currently provides the foundation:
 - deterministic accept, retrieve, regenerate, reconcile, and review policy actions;
 - bounded retries with best-candidate retention, explicit uncertainty, and a configurable
   two-retry default;
+- an end-to-end control-plane service that persists state, routing, policy, agent/tool execution,
+  model selection, token usage, synthesis, quality attempts, retries, and final status;
+- a live Command Center with probability bars, routing cards, deterministic plan inspection,
+  measured metrics, a dependency graph, and a Plotly execution timeline;
 - unit tests for deterministic foundation code.
 
-The end-to-end telemetry/UI integration is intentionally scheduled for Phase 9. Both Jev stages are
-ready for a `TYPESAFE_API_KEY`, while tests use deterministic injected clients and require no
-external service or quota.
+Both Jev stages are ready for a `TYPESAFE_API_KEY`, while the missing-key path immediately invokes
+the configured conservative fallback and requires no external service or quota. The mock LLM keeps
+the complete Command Center pipeline locally runnable without billing. Phase 10 adds the full Trace
+Explorer, Decision Lab, and Knowledge Base interfaces on top of the Phase 9 telemetry foundation.
 
 The Phase 4 web provider searches English Wikipedia rather than the entire public web. This keeps
 local demos keyless and honest about source coverage. A broader provider can be substituted through

@@ -39,6 +39,12 @@ class TraceRecord(BaseModel):
     execution_plan: dict[str, Any] | None = None
     synthesis_result: str | None = None
     quality_gate_result: dict[str, Any] | None = None
+    llm_provider: str | None = None
+    llm_model: str | None = None
+    model_tier: str | None = None
+    token_usage: dict[str, int] = Field(default_factory=dict)
+    agent_executions: list[dict[str, Any]] = Field(default_factory=list)
+    tool_calls: list[dict[str, Any]] = Field(default_factory=list)
     final_response: str | None = None
     error: str | None = None
 

@@ -18,6 +18,18 @@ JSON_COLUMNS = {
     "raw_jev_response",
     "execution_plan",
     "quality_gate_result",
+    "token_usage",
+    "agent_executions",
+    "tool_calls",
+}
+
+_TRACE_MIGRATIONS = {
+    "llm_provider": "TEXT",
+    "llm_model": "TEXT",
+    "model_tier": "TEXT",
+    "token_usage": "TEXT NOT NULL DEFAULT '{}'",
+    "agent_executions": "TEXT NOT NULL DEFAULT '[]'",
+    "tool_calls": "TEXT NOT NULL DEFAULT '[]'",
 }
 
 
@@ -63,6 +75,12 @@ class TraceRepository:
                     execution_plan TEXT,
                     synthesis_result TEXT,
                     quality_gate_result TEXT,
+                    llm_provider TEXT,
+                    llm_model TEXT,
+                    model_tier TEXT,
+                    token_usage TEXT NOT NULL DEFAULT '{}',
+                    agent_executions TEXT NOT NULL DEFAULT '[]',
+                    tool_calls TEXT NOT NULL DEFAULT '[]',
                     final_response TEXT,
                     error TEXT
                 );
@@ -89,6 +107,12 @@ class TraceRepository:
                     ON stage_events(trace_id, started_at);
                 """
             )
+            existing = {
+                row["name"] for row in connection.execute("PRAGMA table_info(traces)").fetchall()
+            }
+            for column, definition in _TRACE_MIGRATIONS.items():
+                if column not in existing:
+                    connection.execute(f"ALTER TABLE traces ADD COLUMN {column} {definition}")
 
     def create_trace(self, trace: TraceRecord) -> TraceRecord:
         values = trace.model_dump(mode="json")

@@ -51,6 +51,11 @@ class RequestTracer:
         )
         return self.repository.add_stage_event(event)
 
+    def snapshot(self, update: TraceUpdate) -> TraceRecord:
+        """Persist an inspectable lifecycle snapshot and retain the current record."""
+        self.trace = self.repository.update_trace(self.trace_id, update)
+        return self.trace
+
     def finalize(
         self,
         *,

@@ -2,6 +2,7 @@ from datetime import UTC, datetime
 
 from neurorouter.schemas.trace import StageStatus, TraceStatus
 from neurorouter.telemetry.database import TraceRepository
+from neurorouter.telemetry.models import TraceUpdate
 from neurorouter.telemetry.tracer import RequestTracer
 
 
@@ -34,3 +35,15 @@ def test_request_tracer_marks_context_exception_failed(repository: TraceReposito
     assert stored is not None
     assert stored.status is TraceStatus.FAILED
     assert stored.error == "expected failure"
+
+
+def test_request_tracer_persists_lifecycle_snapshot(repository: TraceRepository) -> None:
+    tracer = RequestTracer(repository, "Persist the route")
+
+    snapshot = tracer.snapshot(
+        TraceUpdate(route="coding", model_tier="standard", token_usage={"total_tokens": 42})
+    )
+
+    assert snapshot.route == "coding"
+    assert tracer.trace.model_tier == "standard"
+    assert repository.get_trace(tracer.trace_id).token_usage == {"total_tokens": 42}

@@ -2,6 +2,7 @@
 
 import logging
 import math
+from datetime import UTC, datetime
 from time import perf_counter
 
 from neurorouter.jev.client import JevClient
@@ -9,6 +10,8 @@ from neurorouter.jev.parsers import parse_routing_response
 from neurorouter.jev.routing_questions import build_routing_questions
 from neurorouter.schemas.routing import Intent, JevRoutingResult, RoutingDecision
 from neurorouter.schemas.state import RouterState
+from neurorouter.schemas.trace import StageStatus
+from neurorouter.telemetry.tracer import RequestTracer
 from neurorouter.utils.config import JevFallbackSettings
 
 logger = logging.getLogger(__name__)
@@ -17,11 +20,19 @@ logger = logging.getLogger(__name__)
 class JevRouter:
     """Batch atomic judgments and return a provider-neutral routing result."""
 
-    def __init__(self, client: JevClient, fallback: JevFallbackSettings) -> None:
+    def __init__(
+        self,
+        client: JevClient,
+        fallback: JevFallbackSettings,
+        *,
+        tracer: RequestTracer | None = None,
+    ) -> None:
         self.client = client
         self.fallback = fallback
+        self.tracer = tracer
 
     async def route(self, state: RouterState) -> JevRoutingResult:
+        started_at = datetime.now(UTC)
         started = perf_counter()
         try:
             raw = await self.client.evaluate(
@@ -30,16 +41,58 @@ class JevRouter:
             )
             latency_ms = (perf_counter() - started) * 1000
             decision = parse_routing_response(raw, latency_ms=latency_ms)
-            return JevRoutingResult(decision=decision, raw_response=dict(raw))
+            result = JevRoutingResult(decision=decision, raw_response=dict(raw))
+            self._record(result, started_at)
+            return result
         except Exception as error:
             latency_ms = (perf_counter() - started) * 1000
             if not self.fallback.enabled:
+                if self.tracer:
+                    self.tracer.record_stage(
+                        stage="jev_routing",
+                        component="JevRouter",
+                        status=StageStatus.FAILED,
+                        started_at=started_at,
+                        dependencies=["state_building"],
+                        metadata={"fallback_applied": False},
+                        error=str(error),
+                    )
                 raise
             logger.warning(
                 "Jev routing failed; applying configured fallback",
                 extra={"error_type": type(error).__name__},
             )
-            return self._fallback_result(state, latency_ms, error)
+            result = self._fallback_result(state, latency_ms, error)
+            self._record(result, started_at, error=error)
+            return result
+
+    def _record(
+        self,
+        result: JevRoutingResult,
+        started_at: datetime,
+        *,
+        error: Exception | None = None,
+    ) -> None:
+        if self.tracer is None:
+            return
+        decision = result.decision
+        fallback_applied = bool(result.raw_response.get("fallback_applied"))
+        self.tracer.record_stage(
+            stage="jev_routing",
+            component="JevRouter",
+            status=StageStatus.FAILED if fallback_applied else StageStatus.SUCCEEDED,
+            started_at=started_at,
+            dependencies=["state_building"],
+            metadata={
+                "intent": decision.intent.value,
+                "intent_confidence": decision.intent_confidence,
+                "complexity_score": decision.complexity_score,
+                "risk_score": decision.risk_score,
+                "jev_model": decision.jev_model,
+                "fallback_applied": fallback_applied,
+            },
+            error=(f"{type(error).__name__}: fallback applied" if error else None),
+        )
 
     def _fallback_result(
         self, state: RouterState, latency_ms: float, error: Exception

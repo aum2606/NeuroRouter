@@ -6,12 +6,11 @@ from neurorouter.telemetry import TraceRepository
 from neurorouter.utils.config import PROJECT_ROOT, load_settings
 
 settings = load_settings()
-database_path = PROJECT_ROOT / settings.telemetry.database_path
-repository = TraceRepository(database_path)
+repository = TraceRepository(PROJECT_ROOT / settings.telemetry.database_path)
 
 st.set_page_config(
     page_title=settings.ui.page_title,
-    page_icon=settings.ui.page_icon,
+    page_icon="🧠",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -19,12 +18,11 @@ st.set_page_config(
 st.markdown(
     """
     <style>
-    [data-testid="stAppViewContainer"] {background: #080d18;}
-    [data-testid="stSidebar"] {background: #0c1424;}
-    .nr-kicker {color:#54e5c2; letter-spacing:.18em; font-size:.75rem; font-weight:700;}
-    .nr-card {border:1px solid #26344e; background:#101a2c; border-radius:14px;
-              padding:1rem 1.1rem; min-height:116px;}
-    .nr-muted {color:#91a0b8;}
+    [data-testid="stAppViewContainer"] {background:#070b14;}
+    [data-testid="stSidebar"] {background:#0b1220;}
+    .nr-kicker {color:#55e6c1; letter-spacing:.18em; font-size:.75rem; font-weight:750;}
+    .nr-card {border:1px solid #26344e; background:linear-gradient(145deg,#101a2c,#0c1423);
+      border-radius:14px; padding:1rem 1.1rem; min-height:116px;}
     </style>
     """,
     unsafe_allow_html=True,
@@ -32,60 +30,63 @@ st.markdown(
 
 st.markdown('<div class="nr-kicker">PROBABILISTIC AI CONTROL PLANE</div>', unsafe_allow_html=True)
 st.title("NeuroRouter")
-st.caption("Jev judgments → deterministic policy → bounded execution → quality control")
+st.caption(
+    "Jev judgments → deterministic policy → bounded agents → evidence synthesis → quality control"
+)
 
+traces = repository.list_traces(limit=1000)
 health = "ONLINE" if repository.healthcheck() else "DEGRADED"
+accepted = sum(trace.status.value == "accepted" for trace in traces)
+review = sum(trace.status.value == "review" for trace in traces)
 col1, col2, col3, col4 = st.columns(4)
 col1.metric("Control plane", health)
-col2.metric("Jev model", settings.jev.model)
-col3.metric("Stored traces", len(repository.list_traces(limit=1000)))
-col4.metric("Environment", settings.app.environment.upper())
+col2.metric("Stored traces", len(traces))
+col3.metric("Accepted", accepted)
+col4.metric("Review queue", review)
 
 st.divider()
-left, right = st.columns([1.55, 1], gap="large")
+left, right = st.columns([1.45, 1], gap="large")
 with left:
-    st.subheader("Command Center")
-    st.info("Phase 8 synthesis, atomic Jev quality control, and bounded retries are online.")
-    st.text_area(
-        "Request",
-        placeholder="Ask NeuroRouter to research, analyze, or build something…",
-        height=150,
-        disabled=True,
+    st.subheader("Operational architecture")
+    st.write(
+        "NeuroRouter separates probabilistic judgment from deterministic execution policy. "
+        "Every decision and stage is persisted, inspectable, and replayable at the policy layer."
     )
-    st.button("Route request", type="primary", disabled=True, use_container_width=True)
+    st.graphviz_chart(
+        """
+        digraph {
+          graph [bgcolor="transparent", rankdir=LR]
+          node [shape=box, style="rounded,filled", fillcolor="#142238", color="#344766",
+                fontcolor="#dce7f7"]
+          edge [color="#55e6c1"]
+          User -> State -> Jev -> Policy -> Agents -> Context -> LLM -> Quality -> Outcome
+        }
+        """,
+        use_container_width=True,
+    )
+    st.page_link("pages/1_Command_Center.py", label="Open live Command Center", icon="⚡")
 
 with right:
-    st.subheader("System readiness")
-    readiness = {
-        "Validated state contracts": True,
-        "SQLite telemetry": repository.healthcheck(),
-        "Jev routing layer": True,
-        "Policy engine": True,
-        "Initial agent runtime": True,
-        "Local RAG pipeline": True,
-        "Code specialist": True,
-        "Finance specialist": True,
-        "Context aggregation": True,
-        "LLM synthesis": True,
-        "Jev quality gate": True,
-        "Bounded retry controller": True,
-        "Live operations dashboard": False,
-    }
-    for label, ready in readiness.items():
-        st.write(f"{'🟢' if ready else '⚪'}  {label}")
+    st.subheader("Phase 9 readiness")
+    readiness = (
+        "Validated state contracts",
+        "Atomic Jev routing",
+        "Deterministic policy engine",
+        "Bounded specialist execution",
+        "Local RAG and safe code boundary",
+        "Free-tier LLM provider abstraction",
+        "Atomic Jev quality gate",
+        "Bounded retry controller",
+        "Complete SQLite lifecycle traces",
+        "Execution graph and timeline",
+        "Live operations dashboard",
+    )
+    for label in readiness:
+        st.write(f"🟢  {label}")
 
 st.divider()
-st.subheader("Execution topology")
-st.graphviz_chart(
-    """
-    digraph {
-      graph [bgcolor="transparent", rankdir=LR]
-      node [shape=box, style="rounded,filled", fillcolor="#142238", color="#344766",
-            fontcolor="#dce7f7"]
-      edge [color="#54e5c2"]
-      User -> StateBuilder -> JevRouter -> PolicyEngine -> ExecutionPlan
-      ExecutionPlan -> Agents -> Aggregator -> Synthesizer -> QualityGate -> Outcome
-    }
-    """,
-    use_container_width=True,
+st.caption(
+    f"Environment: {settings.app.environment.upper()} · LLM: {settings.llm.provider.upper()} · "
+    f"Jev: {settings.jev.model} · "
+    f"Paid fallback: {'ON' if settings.llm.allow_paid_models else 'OFF'}"
 )

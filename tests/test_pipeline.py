@@ -46,11 +46,12 @@ def test_pipeline_composes_execution_aggregation_and_synthesis(repository) -> No
 
     assert result.synthesis.response == "Synthesized candidate"
     assert result.degraded is False
-    assert [event.stage for event in events] == [
+    assert {event.stage for event in events} == {
         "agent_execution",
         "context_aggregation",
         "synthesis",
-    ]
+        "execution_pipeline",
+    }
 
 
 class AcceptingRetryController:

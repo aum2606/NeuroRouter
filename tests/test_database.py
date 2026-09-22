@@ -1,3 +1,4 @@
+import sqlite3
 from datetime import UTC, datetime
 
 import pytest
@@ -42,3 +43,21 @@ def test_stage_event_round_trip(repository: TraceRepository) -> None:
 def test_unknown_trace_update_fails(repository: TraceRepository) -> None:
     with pytest.raises(KeyError):
         repository.update_trace("00000000-0000-0000-0000-000000000000", TraceUpdate(route="x"))
+
+
+def test_repository_migrates_phase_one_database(tmp_path) -> None:
+    database_path = tmp_path / "legacy.db"
+    with sqlite3.connect(database_path) as connection:
+        connection.execute(
+            "CREATE TABLE traces (trace_id TEXT PRIMARY KEY, request_text TEXT NOT NULL, "
+            "created_at TEXT NOT NULL, updated_at TEXT NOT NULL, status TEXT NOT NULL, "
+            "route TEXT, total_latency_ms REAL, retry_count INTEGER NOT NULL DEFAULT 0, "
+            "state TEXT, routing_decision TEXT, raw_jev_response TEXT, execution_plan TEXT, "
+            "synthesis_result TEXT, quality_gate_result TEXT, final_response TEXT, error TEXT)"
+        )
+
+    migrated = TraceRepository(database_path)
+    created = migrated.create_trace(TraceRecord(request_text="Migration works"))
+
+    assert created.token_usage == {}
+    assert migrated.get_trace(created.trace_id).agent_executions == []

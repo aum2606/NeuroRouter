@@ -45,6 +45,7 @@ class ExecutionPipeline:
         self.tracer = tracer
 
     async def execute(self, agent_input: AgentInput) -> PipelineResult:
+        pipeline_started = datetime.now(UTC)
         orchestration = await self.orchestrator.execute(agent_input)
         started_at = datetime.now(UTC)
         try:
@@ -92,7 +93,7 @@ class ExecutionPipeline:
                 agent_results=orchestration.results,
             )
             final_response = quality.final_response
-        return PipelineResult(
+        result = PipelineResult(
             orchestration=orchestration,
             evidence=evidence,
             synthesis=synthesis,
@@ -100,3 +101,17 @@ class ExecutionPipeline:
             final_response=final_response,
             degraded=not orchestration.success,
         )
+        if self.tracer:
+            self.tracer.record_stage(
+                stage="execution_pipeline",
+                component=type(self).__name__,
+                status=(StageStatus.SUCCEEDED if not result.degraded else StageStatus.FAILED),
+                started_at=pipeline_started,
+                dependencies=["policy_planning"],
+                metadata={
+                    "agents": [agent.value for agent in agent_input.plan.agents],
+                    "evidence_items": len(evidence.items),
+                    "quality_status": quality.status.value if quality else "not_required",
+                },
+            )
+        return result
