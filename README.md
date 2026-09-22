@@ -7,7 +7,7 @@ classify atomic properties of a request, Python policy will turn those probabili
 execution plan, bounded specialist agents will gather evidence, and an LLM will synthesize only
 when needed. Every stage is designed to be inspectable through persisted traces.
 
-## Implementation status: Phases 1-10
+## Implementation status: Phases 1-11
 
 This repository currently provides the foundation:
 
@@ -52,12 +52,18 @@ This repository currently provides the foundation:
   another Jev or LLM call and presents the exact route delta;
 - a Knowledge Base interface for safe in-memory uploads, local indexing, idempotent re-indexing,
   and a Chroma-backed document catalog;
+- a validated, balanced JSONL routing dataset with 28 initial examples across all seven intents;
+- dependency-free intent accuracy, confusion-matrix, capability precision/recall/F1, Brier,
+  complexity, latency, unnecessary-tool, and probability-calibration metrics;
+- persisted measured evaluation runs and provider-neutral baseline comparison contracts;
+- an Evaluations dashboard with run history, confusion heatmaps, calibration plots, failure
+  inspection, and measured run-to-run comparison;
 - unit tests for deterministic foundation code.
 
 Both Jev stages are ready for a `TYPESAFE_API_KEY`, while the missing-key path immediately invokes
 the configured conservative fallback and requires no external service or quota. The mock LLM keeps
-the complete Command Center pipeline locally runnable without billing. Phase 11 adds the measured
-evaluation framework, calibration plots, and baseline comparison infrastructure.
+the complete Command Center pipeline locally runnable without billing. Phase 12 completes the
+portfolio documentation, architecture diagrams, demo scenarios, and deployment cleanup.
 
 The Phase 4 web provider searches English Wikipedia rather than the entire public web. This keeps
 local demos keyless and honest about source coverage. A broader provider can be substituted through
@@ -85,6 +91,15 @@ Run checks with:
 pytest
 ruff check .
 ```
+
+Run a real Jev routing evaluation after setting `TYPESAFE_API_KEY`:
+
+```bash
+python evals/evaluate_router.py
+```
+
+Each run is persisted in `data/evaluations.db`. NeuroRouter does not ship benchmark claims or
+seed fake dashboard results; charts appear only after measured predictions have been recorded.
 
 ## Configuration
 

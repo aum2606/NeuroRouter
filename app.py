@@ -69,7 +69,7 @@ with left:
     link_columns[1].page_link("pages/2_Trace_Explorer.py", label="Explore traces", icon="🔎")
 
 with right:
-    st.subheader("Phase 10 readiness")
+    st.subheader("Phase 11 readiness")
     readiness = (
         "Validated state contracts",
         "Atomic Jev routing",
@@ -85,6 +85,9 @@ with right:
         "Deep trace inspection",
         "Counterfactual policy laboratory",
         "Knowledge-base ingestion interface",
+        "Measured routing evaluations",
+        "Brier and calibration analysis",
+        "Baseline comparison contracts",
     )
     for label in readiness:
         st.write(f"🟢  {label}")

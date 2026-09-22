@@ -45,6 +45,12 @@ aggregation:
   context_budget_characters: 24000
   max_agent_output_characters: 2000
 
+evaluation:
+  dataset_path: evals/routing_dataset.jsonl
+  database_path: data/evaluations.db
+  probability_threshold: 0.50
+  calibration_bins: 10
+
 jev:
   model: jev-latest
   timeout_seconds: 30.0

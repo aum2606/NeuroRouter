@@ -16,4 +16,5 @@ dist/
 data/*.db
 data/*.db-*
 data/chroma/
+evals/results/
 .streamlit/secrets.toml

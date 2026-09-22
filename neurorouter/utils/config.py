@@ -88,6 +88,15 @@ class AggregationSettings(ConfigModel):
     max_agent_output_characters: int = Field(default=2000, ge=100, le=20000)
 
 
+class EvaluationSettings(ConfigModel):
+    """Paths and deterministic scoring settings for router evaluations."""
+
+    dataset_path: Path = Path("evals/routing_dataset.jsonl")
+    database_path: Path = Path("data/evaluations.db")
+    probability_threshold: float = Field(default=0.5, ge=0, le=1)
+    calibration_bins: int = Field(default=10, ge=2, le=20)
+
+
 class JevFallbackSettings(ConfigModel):
     """Conservative normalized values used only when Jev is unavailable."""
 
@@ -181,6 +190,7 @@ class RuntimeSettings(BaseSettings):
     code_execution: CodeExecutionSettings
     finance: FinanceSettings
     aggregation: AggregationSettings
+    evaluation: EvaluationSettings
     jev: JevSettings
     llm: LLMSettings
     ui: UISettings
