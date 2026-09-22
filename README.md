@@ -7,7 +7,7 @@ classify atomic properties of a request, Python policy will turn those probabili
 execution plan, bounded specialist agents will gather evidence, and an LLM will synthesize only
 when needed. Every stage is designed to be inspectable through persisted traces.
 
-## Implementation status: Phases 1–7
+## Implementation status: Phases 1–8
 
 This repository currently provides the foundation:
 
@@ -37,10 +37,15 @@ This repository currently provides the foundation:
 - provider-neutral LLM contracts and working Mock, Groq, Gemini, and OpenRouter adapters;
 - complexity-tier model routing, versioned synthesis prompts, and an evidence-aware synthesis
   pipeline;
+- a second batched Jev stage with six atomic Noul quality judgments and complete raw-response
+  preservation;
+- deterministic accept, retrieve, regenerate, reconcile, and review policy actions;
+- bounded retries with best-candidate retention, explicit uncertainty, and a configurable
+  two-retry default;
 - unit tests for deterministic foundation code.
 
-The Jev quality gate and retry controller are intentionally not implemented yet. The Jev adapter
-is ready for a `TYPESAFE_API_KEY`, while all provider tests use injected transports and require no
+The end-to-end telemetry/UI integration is intentionally scheduled for Phase 9. Both Jev stages are
+ready for a `TYPESAFE_API_KEY`, while tests use deterministic injected clients and require no
 external service or quota.
 
 The Phase 4 web provider searches English Wikipedia rather than the entire public web. This keeps
@@ -142,3 +147,16 @@ User -> State Builder -> Jev Router -> Policy Engine -> Execution Plan
 
 The SQLite schema is forward-compatible with this lifecycle: the request trace stores snapshots,
 while ordered stage events store timings, dependencies, structured payloads, and errors.
+
+## Quality control and retries
+
+The quality gate never asks Jev whether an answer is merely “good.” One batched request evaluates
+six independent propositions: whether the candidate answers the request, is evidence-supported,
+contains unsupported claims, misses important information, contradicts evidence, or needs more
+retrieval. Each Noul value remains a yes-probability; deterministic thresholds in
+`config/thresholds.yaml` select the controller action.
+
+The retry controller evaluates the initial candidate and permits at most `quality.max_retries` new
+generations. Additional retrieval is an injected callback rather than hidden autonomous behavior.
+If Jev is unavailable, regeneration fails, or the retry ceiling is reached, the controller returns
+the best candidate in an explicit review state with an uncertainty notice.

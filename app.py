@@ -45,7 +45,7 @@ st.divider()
 left, right = st.columns([1.55, 1], gap="large")
 with left:
     st.subheader("Command Center")
-    st.info("Phase 7 parallel execution, context aggregation, and LLM synthesis are online.")
+    st.info("Phase 8 synthesis, atomic Jev quality control, and bounded retries are online.")
     st.text_area(
         "Request",
         placeholder="Ask NeuroRouter to research, analyze, or build something…",
@@ -67,7 +67,9 @@ with right:
         "Finance specialist": True,
         "Context aggregation": True,
         "LLM synthesis": True,
-        "Jev quality gate": False,
+        "Jev quality gate": True,
+        "Bounded retry controller": True,
+        "Live operations dashboard": False,
     }
     for label, ready in readiness.items():
         st.write(f"{'🟢' if ready else '⚪'}  {label}")

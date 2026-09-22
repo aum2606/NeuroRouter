@@ -7,8 +7,10 @@ from pydantic import BaseModel, ConfigDict
 from neurorouter.agents.base import AgentInput
 from neurorouter.core.aggregator import ContextAggregator
 from neurorouter.core.orchestrator import OrchestrationResult, Orchestrator
+from neurorouter.core.retry_controller import RetryController
 from neurorouter.core.synthesizer import SynthesisResult, Synthesizer
 from neurorouter.schemas.context import EvidencePacket
+from neurorouter.schemas.quality import QualityOutcome
 from neurorouter.schemas.trace import StageStatus
 from neurorouter.telemetry.tracer import RequestTracer
 
@@ -19,6 +21,8 @@ class PipelineResult(BaseModel):
     orchestration: OrchestrationResult
     evidence: EvidencePacket
     synthesis: SynthesisResult
+    quality: QualityOutcome | None = None
+    final_response: str
     degraded: bool
 
 
@@ -31,11 +35,13 @@ class ExecutionPipeline:
         orchestrator: Orchestrator,
         aggregator: ContextAggregator,
         synthesizer: Synthesizer,
+        retry_controller: RetryController | None = None,
         tracer: RequestTracer | None = None,
     ) -> None:
         self.orchestrator = orchestrator
         self.aggregator = aggregator
         self.synthesizer = synthesizer
+        self.retry_controller = retry_controller
         self.tracer = tracer
 
     async def execute(self, agent_input: AgentInput) -> PipelineResult:
@@ -74,9 +80,23 @@ class ExecutionPipeline:
             plan=agent_input.plan,
             evidence=evidence,
         )
+        quality = None
+        final_response = synthesis.response
+        if agent_input.plan.quality_gate_required:
+            if self.retry_controller is None:
+                raise RuntimeError("quality gate is required but no RetryController is configured")
+            quality = await self.retry_controller.run(
+                request_text=agent_input.request_text,
+                plan=agent_input.plan,
+                initial_synthesis=synthesis,
+                agent_results=orchestration.results,
+            )
+            final_response = quality.final_response
         return PipelineResult(
             orchestration=orchestration,
             evidence=evidence,
             synthesis=synthesis,
+            quality=quality,
+            final_response=final_response,
             degraded=not orchestration.success,
         )

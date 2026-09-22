@@ -51,6 +51,7 @@ class Synthesizer:
         request_text: str,
         plan: ExecutionPlan,
         evidence: EvidencePacket,
+        retry_instruction: str | None = None,
     ) -> SynthesisResult:
         selection = self.model_router.select(plan.model_tier)
         if self.provider.name != selection.provider:
@@ -62,6 +63,7 @@ class Synthesizer:
             plan=plan,
             evidence=evidence,
             citations_required=plan.citations_required,
+            retry_instruction=retry_instruction,
         )
         started_at = datetime.now(UTC)
         try:

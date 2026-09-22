@@ -20,6 +20,7 @@ class PromptModel(BaseModel):
 class SynthesisPrompt(PromptModel):
     system: str = Field(min_length=1)
     user_template: str = Field(min_length=1)
+    retry_instructions: dict[str, str] = Field(default_factory=dict)
 
 
 class PromptConfiguration(PromptModel):
@@ -48,6 +49,7 @@ class SynthesisPromptRenderer:
         plan: ExecutionPlan,
         evidence: EvidencePacket,
         citations_required: bool,
+        retry_instruction: str | None = None,
     ) -> list[LLMMessage]:
         citation_policy = (
             "Citations are required. Cite factual evidence using only its assigned [S#] label, "
@@ -80,6 +82,8 @@ class SynthesisPromptRenderer:
         user_prompt = self.prompt.user_template
         for token, value in replacements.items():
             user_prompt = user_prompt.replace(token, value)
+        if retry_instruction:
+            user_prompt += f"\n\nRETRY CONSTRAINT\n{retry_instruction.strip()}"
         return [
             LLMMessage(role=MessageRole.SYSTEM, content=self.prompt.system.strip()),
             LLMMessage(role=MessageRole.USER, content=user_prompt.strip()),

@@ -23,4 +23,14 @@ synthesis:
 
     CITATION POLICY
     {{citation_policy}}
+  retry_instructions:
+    additional_retrieval: |
+      Regenerate the response using the expanded evidence packet. Resolve the previously missing
+      information, and do not retain claims that the new evidence does not support.
+    regenerate: |
+      Regenerate from scratch under stricter evidence constraints. Remove unsupported claims,
+      answer the original request directly, and state any remaining uncertainty.
+    reconcile: |
+      Reconcile conflicting evidence explicitly. Prefer stronger and more direct sources, describe
+      unresolved conflicts, and do not present a disputed claim as certain.
 agents: {}
