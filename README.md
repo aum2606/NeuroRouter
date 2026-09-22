@@ -7,7 +7,7 @@ classify atomic properties of a request, Python policy will turn those probabili
 execution plan, bounded specialist agents will gather evidence, and an LLM will synthesize only
 when needed. Every stage is designed to be inspectable through persisted traces.
 
-## Implementation status: Phases 1–6
+## Implementation status: Phases 1–7
 
 This repository currently provides the foundation:
 
@@ -32,11 +32,16 @@ This repository currently provides the foundation:
 - disabled-by-default Python execution with AST restrictions, isolated mode, timeouts, and capped
   output;
 - deterministic financial ratios and a strict fresh-web-evidence guard for current-market claims;
+- a context aggregator with evidence normalization, deduplication, ranking, citations, and a
+  deterministic character budget;
+- provider-neutral LLM contracts and working Mock, Groq, Gemini, and OpenRouter adapters;
+- complexity-tier model routing, versioned synthesis prompts, and an evidence-aware synthesis
+  pipeline;
 - unit tests for deterministic foundation code.
 
-LLM synthesis and quality-gate evaluation are intentionally not implemented yet. The Jev adapter
-is ready for a `TYPESAFE_API_KEY`, while unit tests use injected responses and require no external
-service.
+The Jev quality gate and retry controller are intentionally not implemented yet. The Jev adapter
+is ready for a `TYPESAFE_API_KEY`, while all provider tests use injected transports and require no
+external service or quota.
 
 The Phase 4 web provider searches English Wikipedia rather than the entire public web. This keeps
 local demos keyless and honest about source coverage. A broader provider can be substituted through
@@ -67,9 +72,9 @@ ruff check .
 
 ## Configuration
 
-- `config/settings.yaml`: runtime capabilities, telemetry, UI, and future model tiers.
+- `config/settings.yaml`: runtime capabilities, telemetry, aggregation limits, and model tiers.
 - `config/thresholds.yaml`: deterministic routing and quality policy thresholds.
-- `config/prompts.yaml`: versioned prompt placeholders for later phases.
+- `config/prompts.yaml`: versioned synthesis instructions and evidence-rendering template.
 - `.env`: credentials and local overrides; this file is ignored by Git.
 
 ## Local RAG usage
@@ -116,15 +121,16 @@ Environment overrides use the `NEUROROUTER_` prefix and `__` for nested keys, fo
 ### Free-tier LLM providers
 
 The application defaults to `mock`, which requires no key and cannot incur API charges. The
-configuration also defines interchangeable `groq`, `gemini`, and `openrouter` providers for the
-later synthesis phase. Set the matching key in `.env` and set
-`NEUROROUTER_LLM__PROVIDER` to its name.
+configuration also defines working interchangeable `groq`, `gemini`, and `openrouter` synthesis
+providers. Set the matching key in `.env` and set `NEUROROUTER_LLM__PROVIDER` to its name.
 
-`allow_paid_models` defaults to `false`. OpenRouter uses its `openrouter/free` router, Gemini uses
-Flash/Flash-Lite models available on its free tier, and Groq is constrained to the quota attached
-to a free-tier account. Exhausted quota must fail visibly; NeuroRouter will not silently switch to
-a billable model. Provider model IDs remain configuration rather than application logic because
-free-tier catalogs and limits can change.
+`allow_paid_models` defaults to `false`. OpenRouter is runtime-validated to use only
+`openrouter/free` or explicit `:free` models. Gemini uses stable Flash models listed for its free
+tier, and Groq uses GPT-OSS models within the quota attached to a free account. Use Gemini and Groq
+keys from projects/accounts without billing enabled if zero billing exposure is required. Exhausted
+quota or missing credentials fail visibly; NeuroRouter never retries through another provider or
+silently selects a billable model. Provider model IDs remain configuration rather than application
+logic because free-tier catalogs and limits change.
 
 ## Architecture direction
 

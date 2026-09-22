@@ -81,6 +81,13 @@ class FinanceSettings(ConfigModel):
     ratio_precision: int = Field(default=4, ge=0, le=8)
 
 
+class AggregationSettings(ConfigModel):
+    """Evidence-packet limits applied before synthesis."""
+
+    context_budget_characters: int = Field(default=24000, ge=1000, le=500000)
+    max_agent_output_characters: int = Field(default=2000, ge=100, le=20000)
+
+
 class JevFallbackSettings(ConfigModel):
     """Conservative normalized values used only when Jev is unavailable."""
 
@@ -139,6 +146,15 @@ class LLMSettings(ConfigModel):
         required_tiers = {"fast", "standard", "reasoning"}
         if required_tiers - selected.model_tiers.keys():
             raise ValueError("selected LLM provider must configure all model tiers")
+        if (
+            not self.allow_paid_models
+            and self.provider == "openrouter"
+            and any(
+                model != "openrouter/free" and not model.endswith(":free")
+                for model in selected.model_tiers.values()
+            )
+        ):
+            raise ValueError("OpenRouter paid models are forbidden when billing is disabled")
         return self
 
 
@@ -164,6 +180,7 @@ class RuntimeSettings(BaseSettings):
     rag: RAGSettings
     code_execution: CodeExecutionSettings
     finance: FinanceSettings
+    aggregation: AggregationSettings
     jev: JevSettings
     llm: LLMSettings
     ui: UISettings

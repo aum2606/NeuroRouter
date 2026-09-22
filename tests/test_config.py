@@ -19,6 +19,9 @@ def test_project_configuration_loads() -> None:
     assert settings.code_execution.enabled is False
     assert settings.code_execution.language == "python"
     assert settings.finance.require_web_for_current_data is True
+    assert settings.aggregation.context_budget_characters == 24000
+    assert settings.llm.providers["groq"].model_tiers["fast"] == "openai/gpt-oss-20b"
+    assert settings.llm.providers["gemini"].model_tiers["reasoning"] == "gemini-3.8-flash"
     assert thresholds.routing.web_threshold == pytest.approx(0.65)
     assert thresholds.quality.max_retries == 2
 

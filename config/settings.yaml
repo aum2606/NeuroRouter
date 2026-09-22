@@ -41,6 +41,10 @@ finance:
   require_web_for_current_data: true
   ratio_precision: 4
 
+aggregation:
+  context_budget_characters: 24000
+  max_agent_output_characters: 2000
+
 jev:
   model: jev-latest
   timeout_seconds: 30.0
@@ -81,8 +85,8 @@ llm:
       api_key_env: GROQ_API_KEY
       base_url: https://api.groq.com/openai/v1
       model_tiers:
-        fast: llama-3.1-8b-instant
-        standard: llama-3.3-70b-versatile
+        fast: openai/gpt-oss-20b
+        standard: openai/gpt-oss-120b
         reasoning: openai/gpt-oss-120b
     gemini:
       enabled: true
@@ -90,9 +94,9 @@ llm:
       api_key_env: GEMINI_API_KEY
       base_url: https://generativelanguage.googleapis.com
       model_tiers:
-        fast: gemini-2.5-flash-lite
-        standard: gemini-2.5-flash
-        reasoning: gemini-2.5-flash
+        fast: gemini-3.5-flash-lite
+        standard: gemini-3.6-flash
+        reasoning: gemini-3.8-flash
     openrouter:
       enabled: true
       free_tier_only: true
