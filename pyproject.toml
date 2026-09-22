@@ -10,6 +10,13 @@ readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
 authors = [{ name = "Aum" }]
+keywords = ["ai-agents", "jev", "rag", "observability", "probabilistic-routing"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
 dependencies = [
   "plotly>=6.0,<7",
   "pydantic>=2.11,<3",
@@ -19,6 +26,11 @@ dependencies = [
   "streamlit>=1.48,<2",
   "typesafe-sdk>=0.7,<1",
 ]
+
+[project.urls]
+Repository = "https://github.com/aum2606/NeuroRouter"
+Issues = "https://github.com/aum2606/NeuroRouter/issues"
+Documentation = "https://github.com/aum2606/NeuroRouter/tree/main/docs"
 
 [project.optional-dependencies]
 rag = ["chromadb>=1.0,<2", "pypdf>=5.0,<7"]
